@@ -44,7 +44,7 @@ const FRUIT_ITEMS = [
   context: f.letter + " for " + f.name,
 }));
 
-export const CONTENT_MODES = {
+const CONTENT_MODES = {
   letters: { label: "Letters", items: LETTER_ITEMS },
   numbers: { label: "Numbers", items: NUMBER_ITEMS },
   fruits: { label: "Fruits", items: FRUIT_ITEMS },

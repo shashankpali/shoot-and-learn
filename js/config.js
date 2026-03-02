@@ -39,8 +39,6 @@ export const DIFFICULTY = {
   },
 };
 
-export const CONFIG = { defaultDelayBeforeNext: 1000 };
-
 /**
  * @param {string} difficulty - 'easy' | 'medium' | 'hard'
  */

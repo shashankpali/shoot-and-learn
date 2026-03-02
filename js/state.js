@@ -33,8 +33,3 @@ export function updateState(updates) {
   state = { ...state, ...updates };
   return state;
 }
-
-export function resetState(overrides = {}) {
-  state = { ...initialState(), ...overrides };
-  return state;
-}

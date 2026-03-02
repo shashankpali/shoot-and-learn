@@ -12,7 +12,7 @@ import { createGameEngine } from "./game.js";
 
 const engine = createGameEngine(
   { getState: state.getState, updateState: state.updateState },
-  { getDifficultyConfig: config.getDifficultyConfig, CONFIG: config.CONFIG },
+  { getDifficultyConfig: config.getDifficultyConfig },
   content,
   ui,
   sounds

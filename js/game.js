@@ -19,7 +19,7 @@ function isOverlapping(x, y, used, w, h) {
 
 /**
  * @param {{ getState: () => any, updateState: (u: any) => any }} state
- * @param {{ getDifficultyConfig: (d: string) => any, CONFIG: any }} config
+ * @param {{ getDifficultyConfig: (d: string) => any }} config
  * @param {{ getPool: (m: string, p: string) => any[], getSimilarDistractorPool: (...args: any[]) => any, getPromptLabel: (m: string, i: any) => string, getRandomItem: (a: any[]) => any, shuffle: (a: any[]) => any[] }} content
  * @param {ReturnType<typeof import('./ui.js')>} ui
  * @param {{ playShootSound: () => void, playWrongHitSound: () => void, playReloadSound: () => void }} sounds
