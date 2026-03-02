@@ -4,8 +4,15 @@
  */
 
 import { GAME } from "./constants.js";
+import type { ConfigApi, ContentApi, SoundsApi, StateApi, UiApi } from "./types.js";
 
-function isOverlapping(x, y, used, w, h) {
+function isOverlapping(
+  x: number,
+  y: number,
+  used: Array<{ x: number; y: number; w: number; h: number }>,
+  w: number,
+  h: number
+): boolean {
   w = w || 80;
   h = h || 60;
   return used.some(
@@ -17,19 +24,18 @@ function isOverlapping(x, y, used, w, h) {
   );
 }
 
-/**
- * @param {{ getState: () => any, updateState: (u: any) => any }} state
- * @param {{ getDifficultyConfig: (d: string) => any }} config
- * @param {{ getPool: (m: string, p: string) => any[], getSimilarDistractorPool: (...args: any[]) => any, getPromptLabel: (m: string, i: any) => string, getRandomItem: (a: any[]) => any, shuffle: (a: any[]) => any[] }} content
- * @param {ReturnType<typeof import('./ui.js')>} ui
- * @param {{ playShootSound: () => void, playWrongHitSound: () => void, playReloadSound: () => void }} sounds
- */
-export function createGameEngine(state, config, content, ui, sounds) {
+export function createGameEngine(
+  state: StateApi,
+  config: ConfigApi,
+  content: ContentApi,
+  ui: UiApi,
+  sounds: SoundsApi
+) {
   function getCfg() {
     return config.getDifficultyConfig(state.getState().difficulty);
   }
 
-  function createTargets() {
+  function createTargets(): void {
     const s = state.getState();
     if (s.nextTimeoutId) {
       clearTimeout(s.nextTimeoutId);
@@ -48,12 +54,12 @@ export function createGameEngine(state, config, content, ui, sounds) {
 
     const correctCount = Math.max(1, cfg.correctCountPerRound ?? 1);
     const similarPool = content.getSimilarDistractorPool(roundMode, targetItem, pool, cfg.similarDistractors);
-    const choices = [];
+    const choices: typeof pool = [];
     for (let i = 0; i < correctCount; i++) choices.push(targetItem);
     const count = cfg.targetsPerRound;
 
     while (choices.length < count) {
-      let item;
+      let item: (typeof pool)[number];
       if (similarPool && similarPool.length > 0 && Math.random() < 0.6) {
         item = content.getRandomItem(similarPool);
       } else {
@@ -73,11 +79,11 @@ export function createGameEngine(state, config, content, ui, sounds) {
     const w = cfg.targetSize === "large" ? 96 : cfg.targetSize === "small" ? 52 : 80;
     const h = cfg.targetSize === "large" ? 72 : cfg.targetSize === "small" ? 48 : 60;
 
-    const targets = [];
-    const used = [];
+    const targets: Array<{ el: HTMLElement; item: (typeof pool)[number] }> = [];
+    const used: Array<{ x: number; y: number; w: number; h: number }> = [];
 
     shuffled.forEach((item) => {
-      let x, y;
+      let x: number, y: number;
       let tries = 0;
       do {
         x = padding + Math.random() * (areaRect.width - padding * 2 - w);
@@ -95,7 +101,7 @@ export function createGameEngine(state, config, content, ui, sounds) {
     ui.setPrompt(content.getPromptLabel(roundMode, targetItem), targetItem.display);
   }
 
-  function scheduleNextTargets() {
+  function scheduleNextTargets(): void {
     const s = state.getState();
     const delay = Math.max(0, s.delayBeforeNext);
     const id = setTimeout(() => {
@@ -106,23 +112,23 @@ export function createGameEngine(state, config, content, ui, sounds) {
     state.updateState({ nextTimeoutId: id });
   }
 
-  function clearCurrentTargets() {
+  function clearCurrentTargets(): void {
     const s = state.getState();
     ui.clearTargets(s.targets);
     state.updateState({ targets: [] });
   }
 
-  function hitTarget(el) {
-    return el && el.classList && el.classList.contains("target");
+  function hitTarget(el: Element | null): el is HTMLElement {
+    return !!el?.classList?.contains("target");
   }
 
-  function getTargetRecord(el) {
-    const value = el && el.dataset && el.dataset.value;
+  function getTargetRecord(el: HTMLElement) {
+    const value = el?.dataset?.value;
     const targets = state.getState().targets;
     return targets.find((t) => String(t.item.value) === value);
   }
 
-  function shoot() {
+  function shoot(): void {
     const s = state.getState();
     if (!s.isPlaying || !s.targets.length) return;
 
@@ -143,7 +149,8 @@ export function createGameEngine(state, config, content, ui, sounds) {
       return;
     }
 
-    const correct = state.getState().targetItem && String(state.getState().targetItem.value) === el.dataset.value;
+    const targetEl = el as HTMLElement;
+    const correct = state.getState().targetItem && String(state.getState().targetItem!.value) === targetEl.dataset.value;
 
     if (correct) {
       sounds.playShootSound();
@@ -152,8 +159,8 @@ export function createGameEngine(state, config, content, ui, sounds) {
       let points = cfg.correctPoints;
       if (cfg.comboBonus && streak > 1) points += (streak - 1) * 25;
 
-      const record = getTargetRecord(el);
-      const context = record && record.item.context ? record.item.context : null;
+      const record = getTargetRecord(targetEl);
+      const context = record?.item.context ?? null;
       const comboText = cfg.comboBonus && streak > 1 ? " " + streak + "× combo!" : null;
 
       const correctCountPerRound = Math.max(1, cfg.correctCountPerRound ?? 1);
@@ -163,38 +170,38 @@ export function createGameEngine(state, config, content, ui, sounds) {
         score: next.score + points,
         consecutiveCorrect: streak,
         correctHitCountThisRound: newCorrectHitCount,
-        targets: next.targets.filter((t) => t.el !== el),
+        targets: next.targets.filter((t) => t.el !== targetEl),
       });
-      ui.shatterTarget(el);
+      ui.shatterTarget(targetEl);
 
       if (newCorrectHitCount >= correctCountPerRound) {
         ui.showFeedback({ correct: true, context, comboText });
         setTimeout(() => {
-          ui.removeTarget(el);
+          ui.removeTarget(targetEl);
           clearCurrentTargets();
           scheduleNextTargets();
         }, GAME.SHATTER_REMOVE_DELAY_MS);
       } else {
         const remaining = correctCountPerRound - newCorrectHitCount;
         ui.showFeedback({ correct: true, context: null, comboText: remaining > 0 ? remaining + " more!" : comboText });
-        setTimeout(() => ui.removeTarget(el), GAME.SHATTER_REMOVE_DELAY_MS);
+        setTimeout(() => ui.removeTarget(targetEl), GAME.SHATTER_REMOVE_DELAY_MS);
       }
       ui.updateHUD(state.getState().score, state.getState().lives, cfg.maxLives);
     } else {
       sounds.playWrongHitSound();
       state.updateState({ consecutiveCorrect: 0 });
-      ui.markTargetWrong(el);
+      ui.markTargetWrong(targetEl);
       ui.showFeedback({ correct: false });
       if (cfg.wrongLoseLife && cfg.maxLives > 0) {
         state.updateState({ lives: s.lives - 1 });
         ui.updateHUD(state.getState().score, state.getState().lives, cfg.maxLives);
         if (state.getState().lives <= 0) endGame();
       }
-      ui.unmarkTargetWrongAfter(el, GAME.WRONG_SHAKE_REMOVE_MS);
+      ui.unmarkTargetWrongAfter(targetEl, GAME.WRONG_SHAKE_REMOVE_MS);
     }
   }
 
-  function endGame() {
+  function endGame(): void {
     const s = state.getState();
     state.updateState({ isPlaying: false });
     if (s.nextTimeoutId) clearTimeout(s.nextTimeoutId);
@@ -203,7 +210,7 @@ export function createGameEngine(state, config, content, ui, sounds) {
     ui.showGameOver("Final score: " + s.score);
   }
 
-  function playAgain() {
+  function playAgain(): void {
     const cfg = getCfg();
     state.updateState({
       score: 0,
@@ -215,7 +222,7 @@ export function createGameEngine(state, config, content, ui, sounds) {
     ui.showStartScreen();
   }
 
-  function backToMenu() {
+  function backToMenu(): void {
     state.updateState({ isPlaying: false });
     const s = state.getState();
     if (s.nextTimeoutId) clearTimeout(s.nextTimeoutId);
@@ -225,7 +232,7 @@ export function createGameEngine(state, config, content, ui, sounds) {
     ui.updateHUD(s.score, s.lives, config.getDifficultyConfig(s.difficulty).maxLives);
   }
 
-  function startGame() {
+  function startGame(): void {
     const mode = ui.getSelectedMode();
     const difficulty = ui.getSelectedDifficulty();
     const delayBeforeNext = ui.getTimerValue();
@@ -245,7 +252,7 @@ export function createGameEngine(state, config, content, ui, sounds) {
     createTargets();
   }
 
-  function onCursorMove(x, y) {
+  function onCursorMove(x: number, y: number): void {
     state.updateState({ cursorX: x, cursorY: y });
     ui.updateCursor(x, y);
   }

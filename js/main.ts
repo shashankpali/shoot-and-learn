@@ -18,10 +18,10 @@ const engine = createGameEngine(
   sounds
 );
 
-function init() {
+function init(): void {
   ui.setTheme(ui.getTheme());
 
-  function updateCursor(x, y) {
+  function updateCursor(x: number, y: number): void {
     engine.onCursorMove(x, y);
   }
   document.addEventListener("mousemove", (e) => updateCursor(e.clientX, e.clientY));
@@ -34,7 +34,6 @@ function init() {
     }
   });
 
-  // Click-to-shoot: use click position for hit test (play area only, so UI buttons don't trigger a shot)
   const playArea = document.getElementById("play-area");
   if (playArea) {
     playArea.addEventListener("click", (e) => {
@@ -43,41 +42,45 @@ function init() {
     });
   }
 
-  function bindOptionButtons(selector, onSelect) {
-    document.querySelectorAll(selector).forEach((btn) => {
+  function bindOptionButtons(selector: string, onSelect?: (btn: HTMLElement) => void): void {
+    document.querySelectorAll<HTMLElement>(selector).forEach((btn) => {
       btn.addEventListener("click", () => {
         sounds.playShootSound();
-        btn.parentElement.querySelectorAll("button").forEach((b) => b.classList.remove("selected"));
+        btn.parentElement?.querySelectorAll("button").forEach((b) => b.classList.remove("selected"));
         btn.classList.add("selected");
-        if (onSelect) onSelect(btn);
+        onSelect?.(btn);
       });
     });
   }
   bindOptionButtons(".difficulty-buttons button");
   bindOptionButtons(".mode-buttons button");
 
-  document.querySelectorAll(".theme-buttons [data-theme]").forEach((btn) => {
+  document.querySelectorAll<HTMLElement>(".theme-buttons [data-theme]").forEach((btn) => {
     btn.addEventListener("click", () => {
       sounds.playShootSound();
-      ui.setTheme(btn.dataset.theme);
+      ui.setTheme(btn.dataset.theme ?? "dark");
     });
   });
 
   const startBtn = document.getElementById(ui.getStartButtonId());
-  if (startBtn) startBtn.addEventListener("click", () => {
-    sounds.playShootSound();
-    ui.playShootCursorAnimation();
-    engine.startGame();
-  });
+  if (startBtn) {
+    startBtn.addEventListener("click", () => {
+      sounds.playShootSound();
+      ui.playShootCursorAnimation();
+      engine.startGame();
+    });
+  }
 
   const playAgainBtn = document.getElementById(ui.getPlayAgainButtonId());
   if (playAgainBtn) playAgainBtn.addEventListener("click", engine.playAgain);
 
   const menuBtn = document.getElementById(ui.getMenuButtonId());
-  if (menuBtn) menuBtn.addEventListener("click", () => {
-    sounds.playReloadSound();
-    engine.backToMenu();
-  });
+  if (menuBtn) {
+    menuBtn.addEventListener("click", () => {
+      sounds.playReloadSound();
+      engine.backToMenu();
+    });
+  }
 
   const s = state.getState();
   const cfg = config.getDifficultyConfig(s.difficulty);

@@ -16,12 +16,17 @@ A simple, kid-friendly learning game: move the cursor over the right letter, num
 
 ## How to run locally
 
-1. Open the project folder and start any local static server, for example:
+1. **Build the project** (TypeScript → JavaScript):
+   ```bash
+   npm install
+   npm run build
+   ```
+2. Start a local static server, for example:
    - **Python 3:** `python3 -m http.server 8000`
    - **Node (npx):** `npx serve .`
-2. In your browser go to: `http://localhost:8000` (or the port your server uses).
+3. In your browser go to: `http://localhost:8000` (or the port your server uses).
 
-You can also open `index.html` directly in the browser, but some features may work better with a local server.
+The app loads `dist/main.js`; after changing any `.ts` file in `js/`, run `npm run build` again (or `npm run watch` to rebuild on save).
 
 ## Host for free with GitHub Pages
 
@@ -37,7 +42,8 @@ You can also open `index.html` directly in the browser, but some features may wo
    git push -u origin main
    ```
 3. On GitHub: **Settings → Pages → Source**: choose **Deploy from branch**, branch **main**, folder **/ (root)**. Save.
-4. After a minute or two, the game will be live at:  
+4. **Important:** Run `npm run build`, then `git add -f dist` and commit, so the site can load `dist/main.js` (or use a GitHub Action to build on deploy).
+5. After a minute or two, the game will be live at:  
    `https://YOUR_USERNAME.github.io/YOUR_REPO/`
 
-No build step or backend required — it’s plain HTML, CSS, and JavaScript.
+**Stack:** TypeScript (`js/*.ts`) compiles to JavaScript in `dist/`. No backend required.

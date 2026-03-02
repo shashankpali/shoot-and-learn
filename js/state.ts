@@ -3,7 +3,9 @@
  * All reads/writes go through getState() and updateState() so future features (e.g. persistence, undo) can hook in one place.
  */
 
-const initialState = () => ({
+import type { GameState } from "./types.js";
+
+const initialState = (): GameState => ({
   mode: "letters",
   roundMode: "letters",
   difficulty: "medium",
@@ -20,16 +22,13 @@ const initialState = () => ({
   consecutiveCorrect: 0,
 });
 
-let state = initialState();
+let state: GameState = initialState();
 
-export function getState() {
+export function getState(): GameState {
   return state;
 }
 
-/**
- * @param {Partial<typeof state>} updates
- */
-export function updateState(updates) {
+export function updateState(updates: Partial<GameState>): GameState {
   state = { ...state, ...updates };
   return state;
 }

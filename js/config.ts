@@ -3,7 +3,9 @@
  * maxLives 0 = infinite (no game over from wrong shots).
  */
 
-export const DIFFICULTY = {
+import type { DifficultyConfig, DifficultyLevel } from "./types.js";
+
+export const DIFFICULTY: Record<DifficultyLevel, DifficultyConfig> = {
   easy: {
     targetsPerRound: 4,
     correctCountPerRound: 2,
@@ -39,9 +41,6 @@ export const DIFFICULTY = {
   },
 };
 
-/**
- * @param {string} difficulty - 'easy' | 'medium' | 'hard'
- */
-export function getDifficultyConfig(difficulty) {
-  return DIFFICULTY[difficulty] || DIFFICULTY.medium;
+export function getDifficultyConfig(difficulty: DifficultyLevel): DifficultyConfig {
+  return DIFFICULTY[difficulty] ?? DIFFICULTY.medium;
 }

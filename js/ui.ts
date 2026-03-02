@@ -4,6 +4,7 @@
  */
 
 import { UI as UI_CONSTANTS } from "./constants.js";
+import type { ContentItem, DifficultyLevel, FeedbackOptions, GameMode } from "./types.js";
 
 const IDS = {
   playArea: "play-area",
@@ -21,49 +22,49 @@ const IDS = {
   btnStart: "btn-start",
   btnPlayAgain: "btn-play-again",
   btnMenu: "btn-menu",
-};
+} as const;
 
-function el(id) {
+function el(id: string): HTMLElement | null {
   return document.getElementById(id);
 }
 
-export function getPlayArea() {
+export function getPlayArea(): HTMLElement | null {
   return el(IDS.playArea);
 }
 
-export function updateHUD(score, lives, maxLives) {
+export function updateHUD(score: number, lives: number, maxLives: number): void {
   const scoreEl = el(IDS.score);
   const livesEl = el(IDS.lives);
-  if (scoreEl) scoreEl.textContent = score;
+  if (scoreEl) scoreEl.textContent = String(score);
   if (livesEl) {
     livesEl.textContent = maxLives === 0 ? "❤️ Unlimited" : "❤️".repeat(lives) + "🖤".repeat(maxLives - lives);
   }
 }
 
-export function showFeedback(options) {
+export function showFeedback(options: FeedbackOptions): void {
   const { correct, context, comboText } = options;
   const feedbackEl = el(IDS.feedback);
   if (!feedbackEl) return;
-  if (context || comboText) {
-    feedbackEl.textContent = (context || "") + (comboText ? " " + comboText : "");
+  if (context ?? comboText) {
+    feedbackEl.textContent = (context ?? "") + (comboText ? " " + comboText : "");
     feedbackEl.className = "feedback context";
   } else {
     feedbackEl.textContent = correct ? "Great job! 🎉" : "Oops! Wrong one. Try again!";
     feedbackEl.className = "feedback " + (correct ? "correct" : "wrong");
   }
   feedbackEl.classList.remove("hidden");
-  const duration = context || comboText ? 2500 : 1200;
+  const duration = context ?? comboText ? 2500 : 1200;
   setTimeout(() => feedbackEl.classList.add("hidden"), duration);
 }
 
-export function setPrompt(promptTextStr, targetDisplayStr) {
+export function setPrompt(promptTextStr: string, targetDisplayStr: string): void {
   const promptEl = el(IDS.promptText);
   const targetEl = el(IDS.targetDisplay);
   if (promptEl) promptEl.textContent = promptTextStr;
   if (targetEl) targetEl.textContent = targetDisplayStr;
 }
 
-export function updateCursor(x, y) {
+export function updateCursor(x: number, y: number): void {
   const dot = el(IDS.cursorDot);
   const cross = el(IDS.crosshair);
   if (dot) {
@@ -76,60 +77,62 @@ export function updateCursor(x, y) {
   }
 }
 
-export function hideStartScreen() {
+export function hideStartScreen(): void {
   const start = el(IDS.startScreen);
   if (start) start.classList.add("hidden");
   showMenuButton();
 }
 
-export function showStartScreen() {
+export function showStartScreen(): void {
   const start = el(IDS.startScreen);
   if (start) start.classList.remove("hidden");
   hideMenuButton();
 }
 
-export function hideMenuButton() {
+export function hideMenuButton(): void {
   const btn = el(IDS.btnMenu);
   if (btn) btn.classList.add("hidden");
 }
 
-export function showMenuButton() {
+export function showMenuButton(): void {
   const btn = el(IDS.btnMenu);
   if (btn) btn.classList.remove("hidden");
 }
 
-export function showGameOver(finalScoreMsg) {
+export function showGameOver(finalScoreMsg: string): void {
   const overlay = el(IDS.gameOver);
   const msgEl = el(IDS.finalScoreMsg);
   if (msgEl) msgEl.textContent = finalScoreMsg;
   if (overlay) overlay.classList.remove("hidden");
 }
 
-export function hideGameOver() {
+export function hideGameOver(): void {
   const overlay = el(IDS.gameOver);
   if (overlay) overlay.classList.add("hidden");
 }
 
-export function getSelectedMode() {
+export function getSelectedMode(): GameMode {
   const btn = document.querySelector(".mode-buttons button.selected");
-  return btn ? btn.dataset.mode : "letters";
+  const mode = (btn as HTMLElement | null)?.dataset?.mode;
+  return (mode as GameMode) ?? "letters";
 }
 
-export function getSelectedDifficulty() {
+export function getSelectedDifficulty(): DifficultyLevel {
   const btn = document.querySelector(".difficulty-buttons button.selected");
-  return btn ? btn.dataset.difficulty : "medium";
+  const difficulty = (btn as HTMLElement | null)?.dataset?.difficulty;
+  return (difficulty as DifficultyLevel) ?? "medium";
 }
 
-export function getTimerValue() {
-  const select = el(IDS.timerSelect);
+export function getTimerValue(): number {
+  const select = el(IDS.timerSelect) as HTMLSelectElement | null;
   return select ? parseInt(select.value, 10) : 1000;
 }
 
-export function setBodyDifficulty(difficulty) {
+export function setBodyDifficulty(difficulty: DifficultyLevel): void {
   document.body.setAttribute("data-difficulty", difficulty);
 }
 
-export function createTargetElement(item, sizeClass, left, top) {
+export function createTargetElement(item: ContentItem, sizeClass: string, left: number, top: number): HTMLElement {
   const el = document.createElement("div");
   el.className = "target pop-in " + sizeClass;
   el.dataset.value = String(item.value);
@@ -140,50 +143,48 @@ export function createTargetElement(item, sizeClass, left, top) {
   return el;
 }
 
-export function appendToPlayArea(element) {
+export function appendToPlayArea(element: HTMLElement): void {
   const area = getPlayArea();
   if (area) area.appendChild(element);
 }
 
-export function clearTargets(targets) {
-  targets.forEach((t) => t.el && t.el.remove());
+export function clearTargets(targets: Array<{ el: HTMLElement; item: ContentItem }>): void {
+  targets.forEach((t) => t.el?.remove());
 }
 
-export function removeTarget(el) {
-  if (el && el.remove) el.remove();
+export function removeTarget(el: HTMLElement | null): void {
+  el?.remove();
 }
 
-export function markTargetWrong(el) {
-  if (el && el.classList) el.classList.add("wrong");
+export function markTargetWrong(el: HTMLElement | null): void {
+  el?.classList?.add("wrong");
 }
 
-export function unmarkTargetWrongAfter(el, ms) {
+export function unmarkTargetWrongAfter(el: HTMLElement | null, ms: number): void {
   if (!el) return;
-  setTimeout(() => el.classList && el.classList.remove("wrong"), ms);
+  setTimeout(() => el.classList?.remove("wrong"), ms);
 }
 
-export function elementAt(x, y) {
+export function elementAt(x: number, y: number): Element | null {
   return document.elementFromPoint(x, y);
 }
 
 const SHOOT_CURSOR_CLASS = "shoot-cursor";
 const SHOOT_CURSOR_DURATION_MS = 250;
 
-/** Play cursor expand animation when shooting. */
-export function playShootCursorAnimation() {
+export function playShootCursorAnimation(): void {
   const dot = el(IDS.cursorDot);
   const cross = el(IDS.crosshair);
   if (dot) dot.classList.add(SHOOT_CURSOR_CLASS);
   if (cross) cross.classList.add(SHOOT_CURSOR_CLASS);
   setTimeout(() => {
-    if (dot) dot.classList.remove(SHOOT_CURSOR_CLASS);
-    if (cross) cross.classList.remove(SHOOT_CURSOR_CLASS);
+    dot?.classList.remove(SHOOT_CURSOR_CLASS);
+    cross?.classList.remove(SHOOT_CURSOR_CLASS);
   }, SHOOT_CURSOR_DURATION_MS);
 }
 
-/** Shatter a target: burst + flying particles. */
-export function shatterTarget(targetEl) {
-  if (!targetEl || !targetEl.classList) return;
+export function shatterTarget(targetEl: HTMLElement | null): void {
+  if (!targetEl?.classList) return;
   targetEl.classList.add("shatter");
   targetEl.classList.remove("correct");
 
@@ -201,44 +202,45 @@ export function shatterTarget(targetEl) {
   }
 }
 
-// --- Theme (view concern) ---
 const THEME_KEY = "shoot-learn-theme";
 
-export function getTheme() {
+export function getTheme(): "light" | "dark" {
   try {
-    return localStorage.getItem(THEME_KEY) || "dark";
-  } catch (_) {
+    return (localStorage.getItem(THEME_KEY) as "light" | "dark") || "dark";
+  } catch {
     return "light";
   }
 }
 
-export function setTheme(theme) {
-  theme = theme === "dark" ? "dark" : "light";
-  if (theme === "dark") document.body.setAttribute("data-theme", "dark");
+export function setTheme(theme: string): void {
+  const normalized: "light" | "dark" = theme === "dark" ? "dark" : "light";
+  if (normalized === "dark") document.body.setAttribute("data-theme", "dark");
   else document.body.removeAttribute("data-theme");
   try {
-    localStorage.setItem(THEME_KEY, theme);
-  } catch (_) {}
-  updateThemeButtons(theme);
+    localStorage.setItem(THEME_KEY, normalized);
+  } catch {
+    // ignore
+  }
+  updateThemeButtons(normalized);
 }
 
-export function updateThemeButtons(theme) {
+export function updateThemeButtons(theme: "light" | "dark"): void {
   const active = theme === "dark" ? "dark" : "light";
-  document.querySelectorAll(".theme-buttons [data-theme]").forEach((btn) => {
+  document.querySelectorAll<HTMLElement>(".theme-buttons [data-theme]").forEach((btn) => {
     const isActive = btn.dataset.theme === active;
     btn.classList.toggle("selected", isActive);
     btn.setAttribute("aria-pressed", isActive ? "true" : "false");
   });
 }
 
-export function getStartButtonId() {
+export function getStartButtonId(): string {
   return IDS.btnStart;
 }
 
-export function getPlayAgainButtonId() {
+export function getPlayAgainButtonId(): string {
   return IDS.btnPlayAgain;
 }
 
-export function getMenuButtonId() {
+export function getMenuButtonId(): string {
   return IDS.btnMenu;
 }

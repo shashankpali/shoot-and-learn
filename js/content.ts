@@ -3,8 +3,10 @@
  * Letters, numbers, fruits and helpers. Add new modes/items here without touching game logic.
  */
 
-const LETTER_ITEMS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((letter) => {
-  const words = {
+import type { ContentItem } from "./types.js";
+
+const LETTER_ITEMS: ContentItem[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((letter) => {
+  const words: Record<string, string> = {
     A: "Apple", B: "Ball", C: "Cat", D: "Dog", E: "Elephant", F: "Fish",
     G: "Grapes", H: "House", I: "Ice", J: "Jam", K: "Kite", L: "Lion",
     M: "Moon", N: "Nest", O: "Orange", P: "Penguin", Q: "Queen", R: "Rainbow",
@@ -14,11 +16,11 @@ const LETTER_ITEMS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((letter) => {
   return {
     value: letter,
     display: letter,
-    context: letter + " for " + (words[letter] || letter),
+    context: letter + " for " + (words[letter] ?? letter),
   };
 });
 
-const NUMBER_ITEMS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
+const NUMBER_ITEMS: ContentItem[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
   const words = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
   return {
     value: n,
@@ -27,7 +29,7 @@ const NUMBER_ITEMS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
   };
 });
 
-const FRUIT_ITEMS = [
+const FRUIT_ITEMS: ContentItem[] = [
   { name: "Apple", emoji: "🍎", letter: "A" },
   { name: "Banana", emoji: "🍌", letter: "B" },
   { name: "Cherry", emoji: "🍒", letter: "C" },
@@ -44,33 +46,32 @@ const FRUIT_ITEMS = [
   context: f.letter + " for " + f.name,
 }));
 
-const CONTENT_MODES = {
+const CONTENT_MODES: Record<string, { label: string; items: ContentItem[] }> = {
   letters: { label: "Letters", items: LETTER_ITEMS },
   numbers: { label: "Numbers", items: NUMBER_ITEMS },
   fruits: { label: "Fruits", items: FRUIT_ITEMS },
   random: { label: "Random", items: [] },
 };
 
-const RANDOM_CONTENT_MODES = ["letters", "numbers", "fruits"];
+const RANDOM_CONTENT_MODES = ["letters", "numbers", "fruits"] as const;
 
-/** For Random mode: pick letters, numbers, or fruits for this round. */
-export function getRandomContentMode() {
+export function getRandomContentMode(): "letters" | "numbers" | "fruits" {
   return RANDOM_CONTENT_MODES[Math.floor(Math.random() * RANDOM_CONTENT_MODES.length)];
 }
 
-const SIMILAR_LETTERS = {
+const SIMILAR_LETTERS: Record<string, string> = {
   A: "AHRK", B: "BDPRE", C: "COQG", D: "DBPO", E: "EFB", F: "FEP", G: "GOQC",
   H: "HANKM", I: "IJL1", J: "JIG", K: "KAXH", L: "LI", M: "MNWH", N: "NMWH",
   O: "OQC0", P: "PBRD", Q: "QOGC", R: "RBPK", S: "S5", T: "TY", U: "UV",
   V: "VUY", W: "WMN", X: "XK", Y: "YVT", Z: "Z2",
 };
-const SIMILAR_NUMBERS = { 1: [7], 7: [1], 6: [9], 9: [6], 3: [8], 8: [3], 4: [9], 5: [6] };
+const SIMILAR_NUMBERS: Record<number, number[]> = { 1: [7], 7: [1], 6: [9], 9: [6], 3: [8], 8: [3], 4: [9], 5: [6] };
 
-export function getRandomItem(arr) {
+export function getRandomItem<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export function shuffle(arr) {
+export function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -79,11 +80,7 @@ export function shuffle(arr) {
   return a;
 }
 
-/**
- * @param {string} mode - 'letters' | 'numbers' | 'fruits'
- * @param {'small'|'full'} poolSize
- */
-export function getPool(mode, poolSize) {
+export function getPool(mode: "letters" | "numbers" | "fruits", poolSize: "small" | "full"): ContentItem[] {
   const content = CONTENT_MODES[mode];
   if (!content) return [];
   let items = [...content.items];
@@ -95,27 +92,26 @@ export function getPool(mode, poolSize) {
   return items;
 }
 
-/**
- * @param {string} mode
- * @param {object} targetItem
- * @param {Array} pool - result of getPool()
- * @param {boolean} useSimilar
- */
-export function getSimilarDistractorPool(mode, targetItem, pool, useSimilar) {
+export function getSimilarDistractorPool(
+  mode: string,
+  targetItem: ContentItem,
+  pool: ContentItem[],
+  useSimilar: boolean
+): ContentItem[] | null {
   if (!useSimilar) return null;
   const v = targetItem.value;
-  if (mode === "letters" && SIMILAR_LETTERS[v]) {
+  if (mode === "letters" && typeof v === "string" && SIMILAR_LETTERS[v]) {
     const chars = SIMILAR_LETTERS[v].split("").filter((c) => c !== v);
-    return pool.filter((item) => item.value !== v && chars.includes(item.value));
+    return pool.filter((item) => item.value !== v && chars.includes(String(item.value)));
   }
-  if (mode === "numbers" && SIMILAR_NUMBERS[v]) {
+  if (mode === "numbers" && typeof v === "number" && SIMILAR_NUMBERS[v]) {
     const nums = SIMILAR_NUMBERS[v];
     return pool.filter((item) => item.value !== v && nums.includes(Number(item.value)));
   }
   return null;
 }
 
-export function getPromptLabel(mode, item) {
+export function getPromptLabel(mode: string, item: ContentItem): string {
   if (mode === "letters") return `Shoot the letter ${item.display}!`;
   if (mode === "numbers") return `Shoot the number ${item.display}!`;
   return `Shoot the ${item.value}!`;
