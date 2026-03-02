@@ -182,9 +182,13 @@ html, body {
   border: 2px solid var(--border);
   color: var(--text);
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-  animation: popIn 0.3s ease;
   box-shadow: 0 2px 8px var(--shadow);
   overflow: visible;
+}
+
+/* Pop-in runs only once when target is created; class removed after so .wrong doesn't re-trigger it */
+.target.pop-in {
+  animation: popIn 0.3s ease forwards;
 }
 
 .target:hover,
@@ -283,6 +287,7 @@ html, body {
 
 .target.wrong {
   animation: wrongShake 0.4s ease forwards;
+  transition: none;
 }
 
 @keyframes popIn {

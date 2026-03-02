@@ -131,11 +131,12 @@ export function setBodyDifficulty(difficulty) {
 
 export function createTargetElement(item, sizeClass, left, top) {
   const el = document.createElement("div");
-  el.className = "target " + sizeClass;
+  el.className = "target pop-in " + sizeClass;
   el.dataset.value = String(item.value);
   el.textContent = item.display;
   el.style.left = left + "px";
   el.style.top = top + "px";
+  setTimeout(() => el.classList.remove("pop-in"), 350);
   return el;
 }
 
