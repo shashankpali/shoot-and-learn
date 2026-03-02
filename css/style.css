@@ -1,0 +1,545 @@
+/* ----- Reset & base ----- */
+/* Soft, eye-friendly palettes: light for daytime, dark for playing in the dark (no glare) */
+:root {
+  --bg-start: #e8f0ee;
+  --bg-mid: #dce8e5;
+  --bg-end: #d0e0dc;
+  --surface: rgba(255, 255, 255, 0.7);
+  --surface-strong: rgba(255, 255, 255, 0.9);
+  --accent: #5a9b94;
+  --accent-soft: #7eb8b2;
+  --accent-hover: #4a857e;
+  --text: #3d4f4c;
+  --text-soft: #5c6f6c;
+  --correct: #6b9b7a;
+  --wrong: #c97b7b;
+  --border: rgba(90, 155, 148, 0.35);
+  --shadow: rgba(90, 155, 148, 0.2);
+  --start-screen-bg: rgba(220, 232, 229, 0.95);
+  --overlay-bg: rgba(220, 232, 229, 0.9);
+}
+
+/* Dark mode: soft darks so the screen doesn't strain eyes or light up the room */
+[data-theme="dark"] {
+  --bg-start: #1e2625;
+  --bg-mid: #252d2c;
+  --bg-end: #2a3332;
+  --surface: rgba(45, 55, 54, 0.85);
+  --surface-strong: rgba(50, 62, 61, 0.95);
+  --accent: #6ba89f;
+  --accent-soft: #5c958d;
+  --accent-hover: #7eb8b0;
+  --text: #c8d4d2;
+  --text-soft: #9aaba8;
+  --correct: #5d8f6d;
+  --wrong: #b86a6a;
+  --border: rgba(107, 168, 159, 0.25);
+  --shadow: rgba(0, 0, 0, 0.3);
+  --start-screen-bg: rgba(30, 38, 37, 0.98);
+  --overlay-bg: rgba(30, 38, 37, 0.95);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-mid) 50%, var(--bg-end) 100%);
+  color: var(--text);
+  user-select: none;
+  cursor: none;
+}
+
+/* ----- Custom cursor ----- */
+#cursor-dot {
+  position: fixed;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  box-shadow: 0 0 8px var(--shadow);
+}
+
+#crosshair {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  pointer-events: none;
+  z-index: 9998;
+  border: 2px solid var(--accent-soft);
+  border-radius: 50%;
+  background: transparent;
+  opacity: 0.85;
+}
+
+/* Cursor expand when shooting */
+#cursor-dot.shoot-cursor,
+#crosshair.shoot-cursor {
+  animation: cursorShoot 0.25s ease-out;
+}
+
+@keyframes cursorShoot {
+  0% { transform: scale(1); opacity: 1; }
+  40% { transform: scale(1.8); opacity: 0.9; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ----- Header ----- */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.hud {
+  font-size: 1rem;
+  color: var(--text-soft);
+}
+
+.hud .sep {
+  margin: 0 8px;
+  opacity: 0.6;
+}
+
+#lives {
+  font-size: 1.1rem;
+}
+
+/* ----- Prompt ----- */
+#prompt-box {
+  position: fixed;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 24px;
+  background: var(--surface-strong);
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  box-shadow: 0 4px 12px var(--shadow);
+  z-index: 100;
+}
+
+#prompt-text {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text);
+}
+
+#target-display {
+  color: var(--accent);
+  font-size: 1.4rem;
+}
+
+/* ----- Play area ----- */
+#play-area {
+  position: fixed;
+  top: 120px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+.target {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  min-height: 56px;
+  padding: 8px 12px;
+  font-size: 1.8rem;
+  font-weight: bold;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  color: var(--text);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  animation: popIn 0.3s ease;
+  box-shadow: 0 2px 8px var(--shadow);
+  overflow: visible;
+}
+
+.target:hover,
+.target.highlight {
+  border-color: var(--accent-soft);
+  box-shadow: 0 4px 16px var(--shadow);
+  transform: scale(1.06);
+}
+
+/* Difficulty: target size (Easy = big, Hard = small) */
+.target-size-large {
+  min-width: 72px;
+  min-height: 72px;
+  font-size: 2.4rem;
+  padding: 12px 16px;
+}
+
+.target-size-small {
+  min-width: 48px;
+  min-height: 48px;
+  font-size: 1.4rem;
+  padding: 6px 10px;
+}
+
+.difficulty-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.difficulty-row label {
+  font-size: 0.95rem;
+  color: var(--text-soft);
+}
+
+.difficulty-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.difficulty-buttons button {
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  border: 2px solid var(--accent-soft);
+  background: transparent;
+  color: var(--accent);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.difficulty-buttons button:hover,
+.difficulty-buttons button.selected {
+  background: var(--accent-soft);
+  color: #fff;
+}
+
+.target.correct {
+  animation: correctHit 0.4s ease forwards;
+}
+
+.target.shatter {
+  overflow: visible;
+  animation: targetShatter 0.45s ease-out forwards;
+  pointer-events: none;
+}
+
+.target.shatter .shatter-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  background: var(--accent-soft);
+  border-radius: 50%;
+  opacity: 0.9;
+  animation: shatterParticle 0.45s ease-out forwards;
+  --dx: 0px;
+  --dy: 0px;
+}
+
+@keyframes targetShatter {
+  0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+  30% { transform: scale(1.2); opacity: 1; filter: brightness(1.4); }
+  100% { transform: scale(1.6); opacity: 0; filter: brightness(1.2); }
+}
+
+@keyframes shatterParticle {
+  0% { transform: translate(0, 0); opacity: 0.9; }
+  100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+
+.target.wrong {
+  animation: wrongShake 0.4s ease forwards;
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes correctHit {
+  0% { transform: scale(1.1); opacity: 1; }
+  50% { transform: scale(1.25); opacity: 0.9; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+@keyframes wrongShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+/* ----- Feedback toast ----- */
+.feedback {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  z-index: 200;
+  animation: fadeUp 0.5s ease;
+  max-width: 90%;
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.feedback.hidden {
+  display: none;
+}
+
+.feedback.correct {
+  background: var(--correct);
+  color: #fff;
+  border: none;
+}
+
+.feedback.wrong {
+  background: var(--wrong);
+  color: #fff;
+  border: none;
+}
+
+.feedback.context {
+  background: var(--surface-strong);
+  color: var(--text);
+  border: 2px solid var(--accent-soft);
+  font-weight: 600;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ----- Start screen ----- */
+#start-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--start-screen-bg);
+  z-index: 300;
+  cursor: default;
+}
+
+#start-screen h2 {
+  margin: 0 0 12px;
+  font-size: 1.8rem;
+  color: var(--accent);
+}
+
+#start-screen p {
+  margin: 0 0 24px;
+  max-width: 360px;
+  text-align: center;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mode-buttons button {
+  padding: 12px 20px;
+  font-size: 1rem;
+  border: 2px solid var(--accent-soft);
+  background: transparent;
+  color: var(--accent);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.mode-buttons button:hover,
+.mode-buttons button.selected {
+  background: var(--accent-soft);
+  color: #fff;
+}
+
+.timer-setting {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.timer-setting label {
+  font-size: 0.95rem;
+  color: var(--text-soft);
+}
+
+.timer-setting select {
+  padding: 8px 12px;
+  font-size: 1rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  color: var(--text);
+  cursor: pointer;
+}
+
+#btn-start {
+  padding: 14px 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#btn-start:hover {
+  background: var(--accent-hover);
+}
+
+kbd {
+  padding: 2px 8px;
+  background: var(--border);
+  border-radius: 4px;
+  font-family: inherit;
+  color: var(--text);
+}
+
+/* ----- Overlays ----- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--overlay-bg);
+  z-index: 400;
+  cursor: default;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay-box {
+  text-align: center;
+  padding: 32px;
+  background: var(--surface-strong);
+  border: 2px solid var(--accent-soft);
+  border-radius: 16px;
+  max-width: 360px;
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+.overlay-box h2 {
+  margin: 0 0 12px;
+  color: var(--accent);
+}
+
+.overlay-box p {
+  margin: 0 0 20px;
+  color: var(--text-soft);
+}
+
+.overlay-box button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.overlay-box button:hover {
+  background: var(--accent-hover);
+}
+
+/* ----- Theme toggle (Light / Dark) ----- */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+  border-color: var(--accent-soft);
+}
+
+.theme-setting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.theme-setting label {
+  font-size: 0.95rem;
+  color: var(--text-soft);
+}
+
+.theme-setting .theme-toggle {
+  padding: 10px 16px;
+}

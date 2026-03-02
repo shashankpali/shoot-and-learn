@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shoot & Learn — Kids Game</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="cursor-dot"></div>
+  <div id="crosshair"></div>
+
+  <header class="header">
+    <h1>Shoot & Learn</h1>
+    <div class="hud">
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle light or dark mode" title="Light or dark screen">🌓 Dark</button>
+      <span class="sep">|</span>
+      <span id="score">0</span> points
+      <span class="sep">|</span>
+      <span id="lives">❤️❤️❤️</span>
+    </div>
+  </header>
+
+  <div id="prompt-box">
+    <p id="prompt-text">Shoot the letter <strong id="target-display">A</strong>!</p>
+  </div>
+
+  <main id="play-area"></main>
+
+  <div id="feedback" class="feedback hidden" aria-live="polite"></div>
+
+  <div id="start-screen">
+    <h2>Ready to play?</h2>
+    <p>Move your cursor over the right letter, number, or fruit and press <kbd>Space</kbd> to shoot!</p>
+    <div class="difficulty-row">
+      <label>Who’s playing?</label>
+      <div class="difficulty-buttons">
+        <button type="button" data-difficulty="easy" title="2–4 years: big targets, no penalty for wrong">Easy (2+)</button>
+        <button type="button" data-difficulty="medium" class="selected" title="5–8 years">Medium</button>
+        <button type="button" data-difficulty="hard" title="9+ and adults: more targets, trickier choices, combo bonus">Hard (9+ / adult)</button>
+      </div>
+    </div>
+    <div class="mode-buttons">
+      <button type="button" data-mode="letters">Letters</button>
+      <button type="button" data-mode="numbers">Numbers</button>
+      <button type="button" data-mode="fruits">Fruits</button>
+      <button type="button" data-mode="random" title="Each round: letters, numbers, or fruits at random">Random</button>
+    </div>
+    <div class="theme-setting">
+      <label>Screen</label>
+      <button type="button" id="theme-toggle-start" class="theme-toggle" aria-label="Toggle light or dark mode">🌓 Dark</button>
+    </div>
+    <div class="timer-setting">
+      <label for="timer-select">Time before next item</label>
+      <select id="timer-select" aria-label="Time between items">
+        <option value="0">No delay — only when you hit</option>
+        <option value="500">0.5 seconds</option>
+        <option value="1000" selected>1 second</option>
+        <option value="2000">2 seconds</option>
+        <option value="3000">3 seconds</option>
+      </select>
+    </div>
+    <button type="button" id="btn-start">Start Game</button>
+  </div>
+
+  <div id="game-over" class="overlay hidden">
+    <div class="overlay-box">
+      <h2>Game Over</h2>
+      <p id="final-score-msg">Final score: 0</p>
+      <button type="button" id="btn-play-again">Play Again</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
