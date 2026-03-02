@@ -226,7 +226,7 @@ const THEME_KEY = "shoot-learn-theme";
 
 export function getTheme() {
   try {
-    return localStorage.getItem(THEME_KEY) || "light";
+    return localStorage.getItem(THEME_KEY) || "dark";
   } catch (_) {
     return "light";
   }
@@ -239,25 +239,16 @@ export function setTheme(theme) {
   try {
     localStorage.setItem(THEME_KEY, theme);
   } catch (_) {}
-  updateThemeButtonLabel(theme);
+  updateThemeButtons(theme);
 }
 
-export function updateThemeButtonLabel(theme) {
-  const isDark = theme === "dark";
-  const label = isDark ? "Light" : "Dark";
-  const title = isDark ? "Switch to light screen" : "Switch to dark screen (easier in dark room)";
-  [IDS.themeToggle, IDS.themeToggleStart].forEach((id) => {
-    const btn = el(id);
-    if (btn) {
-      btn.textContent = "🌓 " + label;
-      btn.title = title;
-    }
+export function updateThemeButtons(theme) {
+  const active = theme === "dark" ? "dark" : "light";
+  document.querySelectorAll(".theme-buttons [data-theme]").forEach((btn) => {
+    const isActive = btn.dataset.theme === active;
+    btn.classList.toggle("selected", isActive);
+    btn.setAttribute("aria-pressed", isActive ? "true" : "false");
   });
-}
-
-/** For main.js: bind buttons that need ids */
-export function getThemeToggleIds() {
-  return [IDS.themeToggle, IDS.themeToggleStart];
 }
 
 export function getStartButtonId() {

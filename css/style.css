@@ -55,6 +55,18 @@ html, body {
   color: var(--text);
   user-select: none;
   cursor: none;
+  touch-action: manipulation;
+}
+
+/* On touch devices: show default cursor, hide custom crosshair (no mouse to follow) */
+@media (hover: none) and (pointer: coarse) {
+  html, body {
+    cursor: default;
+  }
+  #cursor-dot,
+  #crosshair {
+    display: none !important;
+  }
 }
 
 /* ----- Custom cursor ----- */
@@ -68,6 +80,10 @@ html, body {
   pointer-events: none;
   z-index: 9999;
   box-shadow: 0 0 8px var(--shadow);
+}
+
+#play-area {
+  touch-action: manipulation;
 }
 
 #crosshair {
@@ -123,9 +139,29 @@ html, body {
   color: var(--text-soft);
 }
 
+.hud {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
 .hud .sep {
-  margin: 0 8px;
+  margin: 0 4px;
   opacity: 0.6;
+}
+
+@media (max-width: 380px) {
+  .header {
+    padding: 10px 12px;
+  }
+  .header h1 {
+    font-size: 1.1rem;
+  }
+  .hud {
+    font-size: 0.9rem;
+  }
 }
 
 #lives {
@@ -533,12 +569,19 @@ kbd {
   display: none !important;
 }
 
-.theme-toggle {
+.theme-buttons {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.theme-buttons .theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
   padding: 6px 10px;
-  font-size: 0.9rem;
+  font-size: 1.25rem;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
@@ -546,9 +589,15 @@ kbd {
   cursor: pointer;
 }
 
-.theme-toggle:hover {
+.theme-buttons .theme-toggle:hover {
   color: var(--text);
   border-color: var(--accent-soft);
+}
+
+.theme-buttons .theme-toggle.selected {
+  border-color: var(--accent-soft);
+  color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .theme-setting {
@@ -564,6 +613,6 @@ kbd {
   color: var(--text-soft);
 }
 
-.theme-setting .theme-toggle {
+.theme-setting .theme-buttons .theme-toggle {
   padding: 10px 16px;
 }

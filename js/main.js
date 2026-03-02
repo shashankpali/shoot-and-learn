@@ -19,7 +19,11 @@ const engine = createGameEngine(
 function init() {
   ui.setTheme(ui.getTheme());
 
-  document.addEventListener("mousemove", (e) => engine.onCursorMove(e.clientX, e.clientY));
+  function updateCursor(x, y) {
+    engine.onCursorMove(x, y);
+  }
+  document.addEventListener("mousemove", (e) => updateCursor(e.clientX, e.clientY));
+  document.addEventListener("pointermove", (e) => updateCursor(e.clientX, e.clientY));
 
   document.addEventListener("keydown", (e) => {
     if (e.code === "Space") {
@@ -53,11 +57,10 @@ function init() {
     });
   });
 
-  ui.getThemeToggleIds().forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener("click", () => {
+  document.querySelectorAll(".theme-buttons [data-theme]").forEach((btn) => {
+    btn.addEventListener("click", () => {
       ui.playShootSound();
-      ui.setTheme(ui.getTheme() === "dark" ? "light" : "dark");
+      ui.setTheme(btn.dataset.theme);
     });
   });
 
