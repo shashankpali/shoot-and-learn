@@ -39,6 +39,7 @@ function init() {
 
   document.querySelectorAll(".difficulty-buttons button").forEach((btn) => {
     btn.addEventListener("click", () => {
+      ui.playShootSound();
       document.querySelectorAll(".difficulty-buttons button").forEach((b) => b.classList.remove("selected"));
       btn.classList.add("selected");
     });
@@ -46,6 +47,7 @@ function init() {
 
   document.querySelectorAll(".mode-buttons button").forEach((btn) => {
     btn.addEventListener("click", () => {
+      ui.playShootSound();
       document.querySelectorAll(".mode-buttons button").forEach((b) => b.classList.remove("selected"));
       btn.classList.add("selected");
     });
@@ -53,14 +55,27 @@ function init() {
 
   ui.getThemeToggleIds().forEach((id) => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener("click", () => ui.setTheme(ui.getTheme() === "dark" ? "light" : "dark"));
+    if (el) el.addEventListener("click", () => {
+      ui.playShootSound();
+      ui.setTheme(ui.getTheme() === "dark" ? "light" : "dark");
+    });
   });
 
   const startBtn = document.getElementById(ui.getStartButtonId());
-  if (startBtn) startBtn.addEventListener("click", engine.startGame);
+  if (startBtn) startBtn.addEventListener("click", () => {
+    ui.playShootSound();
+    ui.playShootCursorAnimation();
+    engine.startGame();
+  });
 
   const playAgainBtn = document.getElementById(ui.getPlayAgainButtonId());
   if (playAgainBtn) playAgainBtn.addEventListener("click", engine.playAgain);
+
+  const menuBtn = document.getElementById(ui.getMenuButtonId());
+  if (menuBtn) menuBtn.addEventListener("click", () => {
+    ui.playReloadSound();
+    engine.backToMenu();
+  });
 
   const s = state.getState();
   const cfg = config.getDifficultyConfig(s.difficulty);

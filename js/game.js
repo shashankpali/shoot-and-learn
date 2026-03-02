@@ -97,6 +97,7 @@ export function createGameEngine(state, config, content, ui) {
     const delay = Math.max(0, s.delayBeforeNext);
     const id = setTimeout(() => {
       state.updateState({ nextTimeoutId: null });
+      ui.playReloadSound();
       createTargets();
     }, delay);
     state.updateState({ nextTimeoutId: id });
@@ -142,6 +143,7 @@ export function createGameEngine(state, config, content, ui) {
     const correct = state.getState().targetItem && String(state.getState().targetItem.value) === el.dataset.value;
 
     if (correct) {
+      ui.playShootSound();
       const next = state.getState();
       const streak = next.consecutiveCorrect + 1;
       let points = cfg.correctPoints;
@@ -176,6 +178,7 @@ export function createGameEngine(state, config, content, ui) {
       }
       ui.updateHUD(state.getState().score, state.getState().lives, cfg.maxLives);
     } else {
+      ui.playWrongHitSound();
       state.updateState({ consecutiveCorrect: 0 });
       el.classList.add("wrong");
       ui.showFeedback({ correct: false });

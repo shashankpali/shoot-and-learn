@@ -153,6 +153,39 @@ export function elementAt(x, y) {
   return document.elementFromPoint(x, y);
 }
 
+// --- Sounds (shoot / reload; drop your own files in sounds/) ---
+const SOUNDS = {
+  shoot: "sounds/shoot.mp3",
+  shootAlt: "sounds/shoot-alt.mp3",
+  wrongImpact: "sounds/wrong-impact.mp3",
+  reload: "sounds/reload.mp3",
+};
+
+function playSound(name) {
+  try {
+    const src = SOUNDS[name];
+    if (!src) return;
+    const a = new Audio(src);
+    a.volume = 0.5;
+    a.play().catch(() => {});
+  } catch (_) {}
+}
+
+/** Play a random shoot sound (main or alternate). */
+export function playShootSound() {
+  const key = Math.random() < 0.5 ? "shoot" : "shootAlt";
+  playSound(key);
+}
+
+/** Play when shooting a wrong target. */
+export function playWrongHitSound() {
+  playSound("wrongImpact");
+}
+
+export function playReloadSound() {
+  playSound("reload");
+}
+
 const SHOOT_CURSOR_CLASS = "shoot-cursor";
 const SHOOT_CURSOR_DURATION_MS = 250;
 
