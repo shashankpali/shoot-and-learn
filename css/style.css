@@ -15,6 +15,7 @@
   --wrong: #c97b7b;
   --border: rgba(90, 155, 148, 0.35);
   --shadow: rgba(90, 155, 148, 0.2);
+  --shatter-particle: #4a857e;
   --start-screen-bg: rgba(220, 232, 229, 0.95);
   --overlay-bg: rgba(220, 232, 229, 0.9);
 }
@@ -35,6 +36,7 @@
   --wrong: #b86a6a;
   --border: rgba(107, 168, 159, 0.25);
   --shadow: rgba(0, 0, 0, 0.3);
+  --shatter-particle: #6ba89f;
   --start-screen-bg: rgba(30, 38, 37, 0.98);
   --overlay-bg: rgba(30, 38, 37, 0.95);
 }
@@ -302,7 +304,7 @@ html, body {
   width: 8px;
   height: 8px;
   margin: -4px 0 0 -4px;
-  background: var(--accent-soft);
+  background: var(--shatter-particle);
   border-radius: 50%;
   opacity: 0.9;
   animation: shatterParticle 0.45s ease-out forwards;
