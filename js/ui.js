@@ -20,6 +20,7 @@ const IDS = {
   timerSelect: "timer-select",
   btnStart: "btn-start",
   btnPlayAgain: "btn-play-again",
+  btnMenu: "btn-menu",
 };
 
 function el(id) {
@@ -78,11 +79,23 @@ export function updateCursor(x, y) {
 export function hideStartScreen() {
   const start = el(IDS.startScreen);
   if (start) start.classList.add("hidden");
+  showMenuButton();
 }
 
 export function showStartScreen() {
   const start = el(IDS.startScreen);
   if (start) start.classList.remove("hidden");
+  hideMenuButton();
+}
+
+export function hideMenuButton() {
+  const btn = el(IDS.btnMenu);
+  if (btn) btn.classList.add("hidden");
+}
+
+export function showMenuButton() {
+  const btn = el(IDS.btnMenu);
+  if (btn) btn.classList.remove("hidden");
 }
 
 export function showGameOver(finalScoreMsg) {
@@ -219,4 +232,8 @@ export function getStartButtonId() {
 
 export function getPlayAgainButtonId() {
   return IDS.btnPlayAgain;
+}
+
+export function getMenuButtonId() {
+  return IDS.btnMenu;
 }

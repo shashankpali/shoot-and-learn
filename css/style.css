@@ -509,6 +509,25 @@ kbd {
 }
 
 /* ----- Theme toggle (Light / Dark) ----- */
+.btn-menu {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.btn-menu:hover {
+  color: var(--text);
+  border-color: var(--accent-soft);
+}
+
+.btn-menu.hidden {
+  display: none !important;
+}
+
 .theme-toggle {
   display: flex;
   align-items: center;

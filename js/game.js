@@ -209,6 +209,16 @@ export function createGameEngine(state, config, content, ui) {
     ui.showStartScreen();
   }
 
+  function backToMenu() {
+    state.updateState({ isPlaying: false });
+    const s = state.getState();
+    if (s.nextTimeoutId) clearTimeout(s.nextTimeoutId);
+    state.updateState({ nextTimeoutId: null });
+    clearCurrentTargets();
+    ui.showStartScreen();
+    ui.updateHUD(s.score, s.lives, config.getDifficultyConfig(s.difficulty).maxLives);
+  }
+
   function startGame() {
     const mode = ui.getSelectedMode();
     const difficulty = ui.getSelectedDifficulty();
@@ -241,5 +251,6 @@ export function createGameEngine(state, config, content, ui) {
     createTargets,
     playAgain,
     endGame,
+    backToMenu,
   };
 }
