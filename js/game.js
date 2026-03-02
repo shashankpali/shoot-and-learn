@@ -1,7 +1,9 @@
 /**
  * Game engine (SRP: core loop and rules only). No DOM, no content data.
- * Depends on injected state, config, content, ui (DIP). Add new rules or modes without touching UI/content.
+ * Depends on injected state, config, content, ui, sounds (DIP). Add new rules or modes without touching UI/content.
  */
+
+import { GAME } from "./constants.js";
 
 function isOverlapping(x, y, used, w, h) {
   w = w || 80;
@@ -20,8 +22,9 @@ function isOverlapping(x, y, used, w, h) {
  * @param {{ getDifficultyConfig: (d: string) => any, CONFIG: any }} config
  * @param {{ getPool: (m: string, p: string) => any[], getSimilarDistractorPool: (...args: any[]) => any, getPromptLabel: (m: string, i: any) => string, getRandomItem: (a: any[]) => any, shuffle: (a: any[]) => any[] }} content
  * @param {ReturnType<typeof import('./ui.js')>} ui
+ * @param {{ playShootSound: () => void, playWrongHitSound: () => void, playReloadSound: () => void }} sounds
  */
-export function createGameEngine(state, config, content, ui) {
+export function createGameEngine(state, config, content, ui, sounds) {
   function getCfg() {
     return config.getDifficultyConfig(state.getState().difficulty);
   }
@@ -65,7 +68,7 @@ export function createGameEngine(state, config, content, ui) {
     const playArea = ui.getPlayArea();
     if (!playArea) return;
     const areaRect = playArea.getBoundingClientRect();
-    const padding = 80;
+    const padding = GAME.TARGET_PADDING_PX;
     const sizeClass = "target-size-" + (cfg.targetSize || "medium");
     const w = cfg.targetSize === "large" ? 96 : cfg.targetSize === "small" ? 52 : 80;
     const h = cfg.targetSize === "large" ? 72 : cfg.targetSize === "small" ? 48 : 60;
@@ -80,7 +83,7 @@ export function createGameEngine(state, config, content, ui) {
         x = padding + Math.random() * (areaRect.width - padding * 2 - w);
         y = padding + Math.random() * (areaRect.height - padding * 2 - h);
         tries++;
-      } while (isOverlapping(x, y, used, w, h) && tries < 50);
+      } while (isOverlapping(x, y, used, w, h) && tries < GAME.MAX_PLACEMENT_TRIES);
       used.push({ x, y, w, h });
 
       const el = ui.createTargetElement(item, sizeClass, x, y);
@@ -97,7 +100,7 @@ export function createGameEngine(state, config, content, ui) {
     const delay = Math.max(0, s.delayBeforeNext);
     const id = setTimeout(() => {
       state.updateState({ nextTimeoutId: null });
-      ui.playReloadSound();
+      sounds.playReloadSound();
       createTargets();
     }, delay);
     state.updateState({ nextTimeoutId: id });
@@ -143,7 +146,7 @@ export function createGameEngine(state, config, content, ui) {
     const correct = state.getState().targetItem && String(state.getState().targetItem.value) === el.dataset.value;
 
     if (correct) {
-      ui.playShootSound();
+      sounds.playShootSound();
       const next = state.getState();
       const streak = next.consecutiveCorrect + 1;
       let points = cfg.correctPoints;
@@ -167,27 +170,27 @@ export function createGameEngine(state, config, content, ui) {
       if (newCorrectHitCount >= correctCountPerRound) {
         ui.showFeedback({ correct: true, context, comboText });
         setTimeout(() => {
-          el.remove();
+          ui.removeTarget(el);
           clearCurrentTargets();
           scheduleNextTargets();
-        }, 500);
+        }, GAME.SHATTER_REMOVE_DELAY_MS);
       } else {
         const remaining = correctCountPerRound - newCorrectHitCount;
         ui.showFeedback({ correct: true, context: null, comboText: remaining > 0 ? remaining + " more!" : comboText });
-        setTimeout(() => el.remove(), 500);
+        setTimeout(() => ui.removeTarget(el), GAME.SHATTER_REMOVE_DELAY_MS);
       }
       ui.updateHUD(state.getState().score, state.getState().lives, cfg.maxLives);
     } else {
-      ui.playWrongHitSound();
+      sounds.playWrongHitSound();
       state.updateState({ consecutiveCorrect: 0 });
-      el.classList.add("wrong");
+      ui.markTargetWrong(el);
       ui.showFeedback({ correct: false });
       if (cfg.wrongLoseLife && cfg.maxLives > 0) {
         state.updateState({ lives: s.lives - 1 });
         ui.updateHUD(state.getState().score, state.getState().lives, cfg.maxLives);
         if (state.getState().lives <= 0) endGame();
       }
-      setTimeout(() => el.classList.remove("wrong"), 500);
+      ui.unmarkTargetWrongAfter(el, GAME.WRONG_SHAKE_REMOVE_MS);
     }
   }
 

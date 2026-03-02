@@ -116,7 +116,7 @@ export function getSimilarDistractorPool(mode, targetItem, pool, useSimilar) {
 }
 
 export function getPromptLabel(mode, item) {
-  if (mode === "letters") return "Shoot the letter " + item.display + "!";
-  if (mode === "numbers") return "Shoot the number " + item.display + "!";
-  return "Shoot the " + item.value + "!";
+  if (mode === "letters") return `Shoot the letter ${item.display}!`;
+  if (mode === "numbers") return `Shoot the number ${item.display}!`;
+  return `Shoot the ${item.value}!`;
 }

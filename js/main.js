@@ -7,13 +7,15 @@ import * as state from "./state.js";
 import * as config from "./config.js";
 import * as content from "./content.js";
 import * as ui from "./ui.js";
+import * as sounds from "./sounds.js";
 import { createGameEngine } from "./game.js";
 
 const engine = createGameEngine(
   { getState: state.getState, updateState: state.updateState },
   { getDifficultyConfig: config.getDifficultyConfig, CONFIG: config.CONFIG },
   content,
-  ui
+  ui,
+  sounds
 );
 
 function init() {
@@ -41,32 +43,29 @@ function init() {
     });
   }
 
-  document.querySelectorAll(".difficulty-buttons button").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      ui.playShootSound();
-      document.querySelectorAll(".difficulty-buttons button").forEach((b) => b.classList.remove("selected"));
-      btn.classList.add("selected");
+  function bindOptionButtons(selector, onSelect) {
+    document.querySelectorAll(selector).forEach((btn) => {
+      btn.addEventListener("click", () => {
+        sounds.playShootSound();
+        btn.parentElement.querySelectorAll("button").forEach((b) => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        if (onSelect) onSelect(btn);
+      });
     });
-  });
-
-  document.querySelectorAll(".mode-buttons button").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      ui.playShootSound();
-      document.querySelectorAll(".mode-buttons button").forEach((b) => b.classList.remove("selected"));
-      btn.classList.add("selected");
-    });
-  });
+  }
+  bindOptionButtons(".difficulty-buttons button");
+  bindOptionButtons(".mode-buttons button");
 
   document.querySelectorAll(".theme-buttons [data-theme]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      ui.playShootSound();
+      sounds.playShootSound();
       ui.setTheme(btn.dataset.theme);
     });
   });
 
   const startBtn = document.getElementById(ui.getStartButtonId());
   if (startBtn) startBtn.addEventListener("click", () => {
-    ui.playShootSound();
+    sounds.playShootSound();
     ui.playShootCursorAnimation();
     engine.startGame();
   });
@@ -76,7 +75,7 @@ function init() {
 
   const menuBtn = document.getElementById(ui.getMenuButtonId());
   if (menuBtn) menuBtn.addEventListener("click", () => {
-    ui.playReloadSound();
+    sounds.playReloadSound();
     engine.backToMenu();
   });
 
