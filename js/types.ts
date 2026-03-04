@@ -32,6 +32,7 @@ export interface GameState {
   targetItem: ContentItem | null;
   targets: Array<{ el: HTMLElement; item: ContentItem }>;
   correctHitCountThisRound: number;
+  correctRequiredThisRound: number;
   isPlaying: boolean;
   cursorX: number;
   cursorY: number;

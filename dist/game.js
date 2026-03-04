@@ -29,7 +29,8 @@ export function createGameEngine(state, config, content, ui, sounds) {
             return;
         const targetItem = content.getRandomItem(pool);
         state.updateState({ targetItem });
-        const correctCount = Math.max(1, cfg.correctCountPerRound ?? 1);
+        const maxCorrect = Math.max(1, cfg.correctCountPerRound ?? 1);
+        const correctCount = 1 + Math.floor(Math.random() * maxCorrect);
         const similarPool = content.getSimilarDistractorPool(roundMode, targetItem, pool, cfg.similarDistractors);
         const choices = [];
         for (let i = 0; i < correctCount; i++)
@@ -43,7 +44,7 @@ export function createGameEngine(state, config, content, ui, sounds) {
             else {
                 item = content.getRandomItem(pool);
             }
-            if (item.value !== targetItem.value && !choices.some((c) => c.value === item.value)) {
+            if (item.value !== targetItem.value) {
                 choices.push(item);
             }
         }
@@ -76,7 +77,7 @@ export function createGameEngine(state, config, content, ui, sounds) {
         }
         correctItems.forEach((item) => placeOne(item, true));
         distractorItems.forEach((item) => placeOne(item, false));
-        state.updateState({ targets });
+        state.updateState({ targets, correctRequiredThisRound: correctCount, correctHitCountThisRound: 0 });
         ui.setPrompt(content.getPromptLabel(roundMode, targetItem), targetItem.display);
     }
     function scheduleNextTargets() {
@@ -134,7 +135,7 @@ export function createGameEngine(state, config, content, ui, sounds) {
             const record = getTargetRecord(targetEl);
             const context = record?.item.context ?? null;
             const comboText = cfg.comboBonus && streak > 1 ? " " + streak + "× combo!" : null;
-            const correctCountPerRound = Math.max(1, cfg.correctCountPerRound ?? 1);
+            const required = next.correctRequiredThisRound;
             const newCorrectHitCount = next.correctHitCountThisRound + 1;
             state.updateState({
                 score: next.score + points,
@@ -143,7 +144,7 @@ export function createGameEngine(state, config, content, ui, sounds) {
                 targets: next.targets.filter((t) => t.el !== targetEl),
             });
             ui.shatterTarget(targetEl);
-            if (newCorrectHitCount >= correctCountPerRound) {
+            if (newCorrectHitCount >= required) {
                 ui.showFeedback({ correct: true, context, comboText });
                 setTimeout(() => {
                     ui.removeTarget(targetEl);
@@ -152,7 +153,7 @@ export function createGameEngine(state, config, content, ui, sounds) {
                 }, GAME.SHATTER_REMOVE_DELAY_MS);
             }
             else {
-                const remaining = correctCountPerRound - newCorrectHitCount;
+                const remaining = required - newCorrectHitCount;
                 ui.showFeedback({ correct: true, context: null, comboText: remaining > 0 ? remaining + " more!" : comboText });
                 setTimeout(() => ui.removeTarget(targetEl), GAME.SHATTER_REMOVE_DELAY_MS);
             }

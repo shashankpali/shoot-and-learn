@@ -11,6 +11,7 @@ const initialState = () => ({
     targetItem: null,
     targets: [],
     correctHitCountThisRound: 0,
+    correctRequiredThisRound: 1,
     isPlaying: false,
     cursorX: 0,
     cursorY: 0,
