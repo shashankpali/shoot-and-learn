@@ -47,7 +47,8 @@ export function createGameEngine(state, config, content, ui, sounds) {
                 choices.push(item);
             }
         }
-        const shuffled = content.shuffle(choices);
+        const correctItems = choices.filter((c) => c.value === targetItem.value);
+        const distractorItems = content.shuffle(choices.filter((c) => c.value !== targetItem.value));
         const playArea = ui.getPlayArea();
         if (!playArea)
             return;
@@ -58,7 +59,7 @@ export function createGameEngine(state, config, content, ui, sounds) {
         const h = cfg.targetSize === "large" ? 72 : cfg.targetSize === "small" ? 48 : 60;
         const targets = [];
         const used = [];
-        shuffled.forEach((item) => {
+        function placeOne(item, allowOverlap) {
             let x, y;
             let tries = 0;
             do {
@@ -66,11 +67,15 @@ export function createGameEngine(state, config, content, ui, sounds) {
                 y = padding + Math.random() * (areaRect.height - padding * 2 - h);
                 tries++;
             } while (isOverlapping(x, y, used, w, h) && tries < GAME.MAX_PLACEMENT_TRIES);
+            if (isOverlapping(x, y, used, w, h) && !allowOverlap)
+                return;
             used.push({ x, y, w, h });
             const el = ui.createTargetElement(item, sizeClass, x, y);
             ui.appendToPlayArea(el);
             targets.push({ el, item });
-        });
+        }
+        correctItems.forEach((item) => placeOne(item, true));
+        distractorItems.forEach((item) => placeOne(item, false));
         state.updateState({ targets });
         ui.setPrompt(content.getPromptLabel(roundMode, targetItem), targetItem.display);
     }

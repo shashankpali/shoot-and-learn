@@ -69,7 +69,8 @@ export function createGameEngine(
         choices.push(item);
       }
     }
-    const shuffled = content.shuffle(choices);
+    const correctItems = choices.filter((c) => c.value === targetItem.value);
+    const distractorItems = content.shuffle(choices.filter((c) => c.value !== targetItem.value));
 
     const playArea = ui.getPlayArea();
     if (!playArea) return;
@@ -82,7 +83,7 @@ export function createGameEngine(
     const targets: Array<{ el: HTMLElement; item: (typeof pool)[number] }> = [];
     const used: Array<{ x: number; y: number; w: number; h: number }> = [];
 
-    shuffled.forEach((item) => {
+    function placeOne(item: (typeof pool)[number], allowOverlap: boolean): void {
       let x: number, y: number;
       let tries = 0;
       do {
@@ -90,12 +91,15 @@ export function createGameEngine(
         y = padding + Math.random() * (areaRect.height - padding * 2 - h);
         tries++;
       } while (isOverlapping(x, y, used, w, h) && tries < GAME.MAX_PLACEMENT_TRIES);
+      if (isOverlapping(x, y, used, w, h) && !allowOverlap) return;
       used.push({ x, y, w, h });
-
       const el = ui.createTargetElement(item, sizeClass, x, y);
       ui.appendToPlayArea(el);
       targets.push({ el, item });
-    });
+    }
+
+    correctItems.forEach((item) => placeOne(item, true));
+    distractorItems.forEach((item) => placeOne(item, false));
 
     state.updateState({ targets });
     ui.setPrompt(content.getPromptLabel(roundMode, targetItem), targetItem.display);

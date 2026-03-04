@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "start": "python3 -m http.server 8000",
+    "fresh": "(lsof -ti:8000 | xargs kill 2>/dev/null) || true && npm install && npm run build && npm start"
   },
   "devDependencies": {
     "typescript": "^5.3.0"
